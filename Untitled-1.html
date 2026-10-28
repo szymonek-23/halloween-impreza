@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Halloweenowe Koło Fortuny 🎃</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Czcionki Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        spooky: {
+                            dark: '#07030d',
+                            card: '#130a21',
+                            border: '#2e184b',
+                            orange: '#ff6600',
+                            purple: '#a855f7',
+                            green: '#22c55e',
+                            red: '#ef4444',
+                            gold: '#eab308'
+                        }
+                    },
+                    fontFamily: {
+                        spooky: ['Creepster', 'cursive'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #07030d;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(168, 85, 247, 0.18) 0px, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(255, 102, 0, 0.18) 0px, transparent 45%);
+            background-attachment: fixed;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .text-glow-orange {
+            text-shadow: 0 0 18px rgba(255, 102, 0, 0.8);
+        }
+        .text-glow-purple {
+            text-shadow: 0 0 18px rgba(168, 85, 247, 0.8);
+        }
+        .glow-box {
+            box-shadow: 0 0 35px rgba(168, 85, 247, 0.2);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0a0512;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #2e184b;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #a855f7;
+        }
+        .clip-pointer {
+            clip-path: polygon(100% 0, 0 0, 50% 100%);
+        }
+    </style>
+</head>
+<body class="text-gray-100 font-sans min-h-screen flex flex-col justify-between selection:bg-spooky-orange selection:text-black">
+
+    <!-- NAGŁÓWEK -->
+    <header class="border-b border-spooky-border bg-spooky-dark/95 backdrop-blur-md sticky top-0 z-30 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl sm:text-4xl animate-pulse">🎃</span>
+                <div>
+                    <h1 class="font-spooky text-2xl sm:text-3xl md:text-4xl text-spooky-orange tracking-wider text-glow-orange">KOŁO FORTUNY</h1>
+                    <p class="text-[10px] sm:text-xs text-purple-300/80">Halloween Party Edition 2026</p>
+                </div>
+            </div>
+            <button onclick="toggleSound()" id="soundToggleBtn" class="text-xs sm:text-sm text-purple-200 hover:text-white bg-spooky-card px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-spooky-border hover:border-spooky-purple transition-all flex items-center gap-2 shadow-md">
+                🔊 Dźwięk: WŁ
+            </button>
+        </div>
+    </header>
+
+    <!-- GŁÓWNA ZAWARTOŚĆ (RESPONSYWNA UKŁAD) -->
+    <main class="max-w-7xl mx-auto px-4 py-4 sm:py-8 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
+        
+        <!-- LEWA KOLUMNA: KOŁO FORTUNY (7/12) -->
+        <div class="lg:col-span-7 flex flex-col items-center justify-center bg-spooky-card p-4 sm:p-6 rounded-3xl border border-spooky-border glow-box relative overflow-hidden">
+            
+            <!-- Tło ozdobne -->
+            <div class="absolute -top-20 -left-20 w-48 h-48 bg-spooky-purple/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-20 -right-20 w-48 h-48 bg-spooky-orange/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            <!-- Kontener Koła i Wskaźnika -->
+            <div class="relative my-2 sm:my-4 w-full max-w-[340px] sm:max-w-[460px] lg:max-w-[500px] aspect-square flex items-center justify-center">
+                
+                <!-- Wskaźnik (Strzałka u góry) -->
+                <div class="absolute -top-3 sm:-top-4 z-20 left-1/2 -translate-x-1/2 filter drop-shadow-[0_4px_12px_rgba(255,102,0,0.9)]">
+                    <div class="w-7 h-9 sm:w-9 sm:h-11 bg-gradient-to-b from-spooky-orange via-red-600 to-spooky-purple clip-pointer border-x-2 border-b-2 border-amber-300"></div>
+                </div>
+
+                <!-- Canvas ze spinnem (HD 1000x1000 dla ostrości na TV) -->
+                <canvas id="wheelCanvas" width="1000" height="1000" class="w-full h-full rounded-full shadow-[0_0_70px_rgba(168,85,247,0.3)]"></canvas>
+
+                <!-- Środkowy przycisk zakręcenia -->
+                <button id="spinBtn" onclick="spinWheel()" class="absolute z-10 w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-spooky-orange via-red-600 to-spooky-purple p-1 shadow-[0_0_35px_rgba(255,102,0,0.8)] hover:scale-105 active:scale-95 transition-transform duration-200 group">
+                    <div class="w-full h-full rounded-full bg-spooky-dark flex flex-col items-center justify-center text-center p-1 border border-amber-300/40 group-hover:bg-spooky-dark/80 transition-colors">
+                        <span class="font-spooky text-xl sm:text-3xl text-spooky-orange leading-none group-hover:scale-110 transition-transform text-glow-orange">LOSUJ!</span>
+                        <span class="text-[8px] sm:text-[10px] text-purple-300/80 mt-0.5 tracking-widest uppercase">KRĘĆ</span>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Opcje sterowania kołem -->
+            <div class="w-full flex items-center justify-between gap-4 mt-2 sm:mt-4 pt-3 sm:pt-4 border-t border-spooky-border/80">
+                <label class="flex items-center gap-2.5 sm:gap-3 text-xs sm:text-sm text-gray-300 cursor-pointer bg-spooky-dark/80 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-spooky-border hover:border-spooky-purple/60 transition-colors">
+                    <input type="checkbox" id="removeOnWin" class="w-4 h-4 rounded accent-spooky-orange cursor-pointer">
+                    <span>Usuwaj wylosowaną opcję</span>
+                </label>
+                <div class="text-xs sm:text-sm text-purple-300 font-medium">
+                    Opcji: <span id="wheelCount" class="text-spooky-orange font-bold">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- PRAWA KOLUMNA: ZAKŁADKI I ZARZĄDZANIE (5/12) -->
+        <div class="lg:col-span-5 bg-spooky-card p-4 sm:p-6 rounded-3xl border border-spooky-border glow-box flex flex-col h-[480px] sm:h-[560px]">
+            
+            <!-- SYSTEM ZAKŁADEK -->
+            <div class="mb-3 sm:mb-4">
+                <p class="text-[10px] sm:text-xs text-purple-300/70 uppercase font-bold tracking-widest mb-2">Wybierz kategorię / listę:</p>
+                <div class="grid grid-cols-2 gap-1.5 p-1 bg-spooky-dark rounded-2xl border border-spooky-border" id="tabsContainer">
+                    <button onclick="switchTab('challenges')" id="tab-challenges" class="tab-btn px-2.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all text-gray-400 hover:text-white flex items-center gap-1.5 justify-center">
+                        <span>🎃</span> Wyzwania
+                    </button>
+                    <button onclick="switchTab('questions')" id="tab-questions" class="tab-btn px-2.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all text-gray-400 hover:text-white flex items-center gap-1.5 justify-center">
+                        <span>❓</span> Pytania
+                    </button>
+                    <button onclick="switchTab('organizers')" id="tab-organizers" class="tab-btn px-2.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all text-gray-400 hover:text-white flex items-center gap-1.5 justify-center">
+                        <span>👑</span> Organizatorzy
+                    </button>
+                    <button onclick="switchTab('combo')" id="tab-combo" class="tab-btn px-2.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all text-gray-400 hover:text-white flex items-center gap-1.5 justify-center">
+                        <span>💀</span> Pytania / Wyzwania
+                    </button>
+                </div>
+                <button onclick="switchTab('custom')" id="tab-custom" class="w-full mt-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all text-gray-400 hover:text-white border border-dashed border-spooky-border hover:border-spooky-orange flex items-center gap-2 justify-center">
+                    <span>✏️</span> Własna lista edytowalna
+                </button>
+            </div>
+
+            <!-- FORMULARZ DODAWANIA -->
+            <form onsubmit="addItem(event)" class="flex gap-2 mb-3">
+                <input type="text" id="newItemInput" placeholder="Dodaj wpis do obecnej listy..." maxlength="45" class="flex-1 bg-spooky-dark border border-spooky-border rounded-xl px-3.5 py-2 text-xs sm:text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-spooky-orange transition-colors">
+                <button type="submit" class="bg-gradient-to-r from-spooky-orange to-amber-600 hover:opacity-90 font-bold px-3.5 py-2 rounded-xl text-xs sm:text-sm text-black transition-all shrink-0">
+                    + Dodaj
+                </button>
+            </form>
+
+            <!-- NAGŁÓWEK LISTY -->
+            <div class="flex justify-between items-center mb-2 px-1">
+                <span class="text-xs sm:text-sm font-bold text-purple-300 uppercase tracking-wider" id="activeCategoryTitle">Wyzwania</span>
+                <button onclick="clearCurrentList()" class="text-[11px] sm:text-xs text-red-400 hover:text-red-300 hover:underline">
+                    Wyczyść tę listę
+                </button>
+            </div>
+
+            <!-- DYNAMICZNA LISTA ELEMENTÓW -->
+            <div id="itemsList" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                <!-- Wpisy generowane w JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL WYNIKU (TV & PHONE OPTIMIZED) -->
+    <div id="resultModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-spooky-card border-2 border-spooky-orange rounded-3xl p-6 sm:p-10 max-w-lg w-full text-center shadow-[0_0_100px_rgba(255,102,0,0.6)] relative animate-in fade-in zoom-in duration-300">
+            
+            <span class="text-6xl sm:text-7xl mb-3 block animate-bounce">🎃</span>
+            <p class="text-xs sm:text-sm text-spooky-orange font-bold uppercase tracking-widest mb-1">Wylosowano!</p>
+            <h3 id="modalWinner" class="text-3xl sm:text-5xl font-bold text-white my-4 sm:my-6 break-words font-spooky tracking-wide text-glow-orange leading-tight">---</h3>
+            
+            <div class="flex flex-col gap-3 mt-6">
+                <button onclick="closeModal(false)" class="w-full bg-gradient-to-r from-spooky-orange to-amber-600 hover:opacity-90 font-bold py-3.5 sm:py-4 rounded-xl text-black shadow-lg transition-transform active:scale-95 text-sm sm:text-base">
+                    Super! Zakręć znowu 🎡
+                </button>
+                <button id="modalRemoveBtn" onclick="closeModal(true)" class="w-full bg-spooky-dark hover:bg-red-950/50 border border-spooky-border hover:border-red-500/50 text-red-400 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm transition-colors">
+                    🗑️ Usuń tę opcję z koła
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STOPKA -->
+    <footer class="border-t border-spooky-border bg-spooky-dark/90 py-3 text-center text-xs text-purple-300/60">
+        <p>Halloween Party Suite 2026 🦇 Gotowy na potworną zabawę?</p>
+    </footer>
+
+    <!-- SKRYPT JAVASCRIPT -->
+    <script>
+        const DATA_SETS = {
+            challenges: [
+                "Zatańcz taniec Wednesday 💃",
+                "Zrób głośny śmiech czarownicy 🧙‍♀️",
+                "Wymyśl halloweenowy drink 🍹",
+                "Udawaj zombie przez 2 minuty 🧟",
+                "Zrób komuś straszny makijaż 💄",
+                "Zaśpiewaj fragment Thrillera 🎤"
+            ],
+            questions: [
+                "Czego boisz się najbardziej w ciemności? 🕷️",
+                "Najdziwniejszy sen jaki miałeś/aś w życiu? 🌙",
+                "Czy wierzysz w duchy lub zjawiska paranormalne? 👻",
+                "Gdybyś był/a potworem, kim byś został/a? 🧛‍♂️",
+                "Najstraszniejszy film, jaki kiedykolwiek widziałeś/aś? 🎬",
+                "Opowiedz straszną historię w 3 zdaniach 📖"
+            ],
+            organizers: [
+                "Wybiera następną piosenkę 🎶",
+                "Rozdaje straszne napoje 🍺",
+                "Robi pamiątkowe zdjęcie grupowe 📸",
+                "Prowadzi następne losowanie 🎡",
+                "Wymyśla zadanie dla całej grupy 👑",
+                "Kontroluje dekoracje halloweenowe 🎃"
+            ],
+            combo: [
+                "Pytanie: Twój największy lęk? 🕷️",
+                "Wyzwanie: Udawaj duch przez 1 minutę 👻",
+                "Pytanie: Najlepsze przebranie z dzieciństwa? 🎭",
+                "Wyzwanie: Zamień się elementem stroju z sąsiadem 🧥",
+                "Pytanie: Jaki horror oceniasz na 10/10? 🍿",
+                "Wyzwanie: Zrób 10 strasznych pompek 🏋️"
+            ],
+            custom: JSON.parse(localStorage.getItem('halloween_custom_items')) || [
+                "Własna opcja 1 🎃",
+                "Własna opcja 2 👻"
+            ]
+        };
+
+        let currentTab = 'challenges';
+        let currentItems = [...DATA_SETS[currentTab]];
+
+        const PALETTE = [
+            '#ff6600', '#a855f7', '#ef4444', '#3b82f6', '#eab308', 
+            '#22c55e', '#ec4899', '#f97316', '#14b8a6', '#8b5cf6'
+        ];
+
+        let currentAngle = 0;
+        let isSpinning = false;
+        let soundEnabled = true;
+        let winningIndex = null;
+
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playTickSound() {
+            if (!soundEnabled) return;
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(320 + Math.random() * 180, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.04);
+            } catch (e) {}
+        }
+
+        function playWinSound() {
+            if (!soundEnabled) return;
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const notes = [440, 554, 659, 880];
+                notes.forEach((freq, index) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + index * 0.09);
+                    gain.gain.setValueAtTime(0.12, audioCtx.currentTime + index * 0.09);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + index * 0.09 + 0.22);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(audioCtx.currentTime + index * 0.09);
+                    osc.stop(audioCtx.currentTime + index * 0.09 + 0.22);
+                });
+            } catch (e) {}
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('soundToggleBtn').innerText = soundEnabled ? '🔊 Dźwięk: WŁ' : '🔇 Dźwięk: WYŁ';
+        }
+
+        function switchTab(tabKey) {
+            currentTab = tabKey;
+            currentItems = [...DATA_SETS[tabKey]];
+
+            document.querySelectorAll('.tab-btn, #tab-custom').forEach(btn => {
+                btn.classList.remove('bg-spooky-purple', 'text-white', 'border-spooky-orange', 'bg-spooky-orange/20');
+                btn.classList.add('text-gray-400');
+            });
+
+            const activeBtn = document.getElementById(`tab-${tabKey}`);
+            if (activeBtn) {
+                if (tabKey === 'custom') {
+                    activeBtn.classList.add('border-spooky-orange', 'text-spooky-orange', 'bg-spooky-orange/10');
+                } else {
+                    activeBtn.classList.add('bg-spooky-purple', 'text-white');
+                }
+            }
+
+            const titles = {
+                challenges: "🎃 Wyzwania",
+                questions: "❓ Pytania",
+                organizers: "👑 Organizatorzy",
+                combo: "💀 Pytania / Wyzwania",
+                custom: "✏️ Własna lista"
+            };
+            document.getElementById('activeCategoryTitle').innerText = titles[tabKey];
+
+            renderItemsList();
+        }
+
+        function drawWheel() {
+            const numSegments = currentItems.length;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = centerX - 30;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (numSegments === 0) {
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#130a21';
+                ctx.fill();
+                ctx.strokeStyle = '#2e184b';
+                ctx.lineWidth = 10;
+                ctx.stroke();
+
+                ctx.fillStyle = '#a855f7';
+                ctx.font = 'bold 32px Plus Jakarta Sans';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('Lista jest pusta! Dodaj opcje ↗️', centerX, centerY);
+                return;
+            }
+
+            const anglePerSegment = (Math.PI * 2) / numSegments;
+
+            for (let i = 0; i < numSegments; i++) {
+                const startAngle = currentAngle + (i * anglePerSegment);
+                const endAngle = startAngle + anglePerSegment;
+
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+
+                ctx.fillStyle = PALETTE[i % PALETTE.length];
+                ctx.fill();
+
+                ctx.strokeStyle = '#07030d';
+                ctx.lineWidth = 6;
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(startAngle + anglePerSegment / 2);
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#FFFFFF';
+                
+                const fontSize = numSegments > 15 ? 22 : (numSegments > 10 ? 28 : 34);
+                ctx.font = `bold ${fontSize}px Plus Jakarta Sans`;
+
+                let text = currentItems[i];
+                if (text.length > 22) text = text.substring(0, 20) + '...';
+
+                ctx.fillText(text, radius - 45, 0);
+                ctx.restore();
+            }
+
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = '#2e184b';
+            ctx.lineWidth = 16;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius + 8, 0, Math.PI * 2);
+            ctx.strokeStyle = '#ff6600';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+        }
+
+        let lastSegmentIndex = -1;
+
+        function spinWheel() {
+            if (isSpinning || currentItems.length === 0) return;
+
+            isSpinning = true;
+            document.getElementById('spinBtn').disabled = true;
+
+            const spinDuration = 4500 + Math.random() * 1000;
+            const totalRotation = (Math.PI * 2 * (6 + Math.floor(Math.random() * 5))) + (Math.random() * Math.PI * 2);
+            const startRotation = currentAngle;
+            const startTime = performance.now();
+
+            function animate(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / spinDuration, 1);
+
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                currentAngle = startRotation + (totalRotation * easeOut);
+
+                const numSegments = currentItems.length;
+                const normalizedAngle = (Math.PI * 1.5 - (currentAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+                const currentSegment = Math.floor(normalizedAngle / ((Math.PI * 2) / numSegments));
+
+                if (currentSegment !== lastSegmentIndex) {
+                    playTickSound();
+                    lastSegmentIndex = currentSegment;
+                }
+
+                drawWheel();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    isSpinning = false;
+                    document.getElementById('spinBtn').disabled = false;
+                    
+                    const finalAngle = (Math.PI * 1.5 - (currentAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+                    winningIndex = Math.floor(finalAngle / ((Math.PI * 2) / numSegments));
+
+                    showWinner(currentItems[winningIndex]);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        function showWinner(winnerName) {
+            playWinSound();
+            try {
+                confetti({
+                    particleCount: 110,
+                    spread: 90,
+                    origin: { y: 0.6 },
+                    colors: ['#ff6600', '#a855f7', '#eab308']
+                });
+            } catch(e){}
+
+            document.getElementById('modalWinner').innerText = winnerName;
+            document.getElementById('resultModal').classList.remove('hidden');
+        }
+
+        function closeModal(shouldRemove) {
+            document.getElementById('resultModal').classList.add('hidden');
+            const removeCheckbox = document.getElementById('removeOnWin').checked;
+
+            if ((shouldRemove || removeCheckbox) && winningIndex !== null) {
+                removeItem(winningIndex);
+            }
+            winningIndex = null;
+        }
+
+        function renderItemsList() {
+            const container = document.getElementById('itemsList');
+            document.getElementById('wheelCount').innerText = currentItems.length;
+            container.innerHTML = '';
+
+            currentItems.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-2.5 bg-spooky-dark/80 rounded-xl border border-spooky-border hover:border-spooky-purple/50 transition-all group';
+                div.innerHTML = `
+                    <div class="flex items-center gap-2.5 overflow-hidden">
+                        <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${PALETTE[index % PALETTE.length]}"></span>
+                        <span class="text-xs sm:text-sm text-gray-200 font-medium truncate">${item}</span>
+                    </div>
+                    <button onclick="removeItem(${index})" class="text-gray-500 hover:text-red-400 p-1 rounded-lg transition-colors" title="Usuń">
+                        🗑️
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+
+            if (currentTab === 'custom') {
+                DATA_SETS.custom = [...currentItems];
+                localStorage.setItem('halloween_custom_items', JSON.stringify(currentItems));
+            }
+
+            drawWheel();
+        }
+
+        function addItem(e) {
+            e.preventDefault();
+            const input = document.getElementById('newItemInput');
+            const val = input.value.trim();
+            if (val) {
+                currentItems.push(val);
+                input.value = '';
+                renderItemsList();
+            }
+        }
+
+        function removeItem(index) {
+            currentItems.splice(index, 1);
+            renderItemsList();
+        }
+
+        function clearCurrentList() {
+            if (confirm('Czy na pewno chcesz usunąć wszystkie opcje z tej listy?')) {
+                currentItems = [];
+                renderItemsList();
+            }
+        }
+
+        switchTab('challenges');
+    </script>
+</body>
+</html>
